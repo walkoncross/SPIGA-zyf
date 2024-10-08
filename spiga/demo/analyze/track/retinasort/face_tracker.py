@@ -12,12 +12,14 @@ import spiga.demo.analyze.features.face as ft_face
 
 class RetinaSortTracker(tracker.Tracker):
 
-    def __init__(self, config=cfg.cfg_retinasort):
+    def __init__(self, config=cfg.cfg_retinasort, device='cuda'):
         super().__init__()
 
         self.detector = retinaface.RetinaFaceDetector(model=config['retina']['model_name'],
+                                                      device=device,
                                                       extra_features=config['retina']['extra_features'],
-                                                      cfg_postreat=config['retina']['postreat'])
+                                                      cfg_postreat=config['retina']['postreat']
+                                                    )
 
         self.associator = sort_tracker.Sort(max_age=config['sort']['max_age'],
                                             min_hits=config['sort']['min_hits'],

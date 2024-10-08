@@ -11,13 +11,14 @@ class SPIGAProcessor(pr.Processor):
     def __init__(self,
                  dataset='wflw',
                  features=('lnd', 'pose'),
-                 gpus=[0]):
+                 gpus=[0],
+                 device='cuda'):
 
         super().__init__()
 
         # Configure and load processor
         self.processor_cfg = model_cfg.ModelConfig(dataset)
-        self.processor = SPIGAFramework(self.processor_cfg, gpus=gpus)
+        self.processor = SPIGAFramework(self.processor_cfg, gpus=gpus, device=device)
 
         # Define attributes
         if 'lnd' in features:

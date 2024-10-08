@@ -31,6 +31,7 @@ def main():
     pars.add_argument('--outpath', type=str, default=video_out_path_dft, help='Video output directory')
     pars.add_argument('--fps', type=int, default=30, help='Frames per second')
     pars.add_argument('--shape', nargs='+', type=int, help='Visualizer shape (W,H)')
+    pars.add_argument('--device', type=str, default='cuda', help='torch device to use, eg: cpu, cuda, cuda:0, mps, mps:0')
     args = pars.parse_args()
 
     if args.shape:
@@ -44,13 +45,32 @@ def main():
     if not args.noview and not args.save:
         raise ValueError('No results will be saved neither shown')
 
-    video_app(args.input, spiga_dataset=args.dataset, tracker=args.tracker, fps=args.fps,
-              save=args.save, output_path=args.outpath, video_shape=video_shape, visualize=args.noview, plot=args.show)
+    video_app(
+        args.input, 
+        spiga_dataset=args.dataset, 
+        tracker=args.tracker, 
+        fps=args.fps,
+        save=args.save, 
+        output_path=args.outpath, 
+        video_shape=video_shape, 
+        visualize=args.noview, 
+        plot=args.show,
+        device=args.device
+    )
 
 
-def video_app(input_name, spiga_dataset=None, tracker=None, fps=30, save=False,
-              output_path=video_out_path_dft, video_shape=None, visualize=True, plot=()):
-
+def video_app(
+    input_name, 
+    spiga_dataset=None, 
+    tracker=None, 
+    fps=30, 
+    save=False,
+    output_path=video_out_path_dft, 
+    video_shape=None, 
+    visualize=True, 
+    plot=(),
+    device='cuda'
+):
     # Load video
     try:
         capture = cv2.VideoCapture(int(input_name))
@@ -77,10 +97,10 @@ def video_app(input_name, spiga_dataset=None, tracker=None, fps=30, save=False,
             viewer.record_video(output_path, video_name)
 
         # Initialize face tracker
-        faces_tracker = tr.get_tracker(tracker)
+        faces_tracker = tr.get_tracker(tracker, device=device)
         faces_tracker.detector.set_input_shape(capture.get(4), capture.get(3))
         # Initialize processors
-        processor = pr_spiga.SPIGAProcessor(dataset=spiga_dataset)
+        processor = pr_spiga.SPIGAProcessor(dataset=spiga_dataset, device=device)
         # Initialize Analyzer
         faces_analyzer = VideoAnalyzer(faces_tracker, processor=processor)
 
