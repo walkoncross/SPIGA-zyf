@@ -144,7 +144,8 @@ class SPIGA(nn.Module):
         grid = grid.reshape(B, L, self.kwindow * self.kwindow, 2)
 
         # Crop windows
-        crops = torch.nn.functional.grid_sample(receptive_field, grid, padding_mode="border")  # BxCxLxK*K
+        padding_mode = "reflection" if torch.mps.is_available() else "border"
+        crops = torch.nn.functional.grid_sample(receptive_field, grid, padding_mode=padding_mode)  # BxCxLxK*K
         crops = crops.transpose(1, 2)  # BxLxCxK*K
         crops = crops.reshape(B * L, C, self.kwindow, self.kwindow)
 

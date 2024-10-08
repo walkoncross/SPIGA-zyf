@@ -14,11 +14,28 @@ from spiga.inference.config import ModelConfig
 
 class SPIGAFramework:
 
-    def __init__(self, model_cfg: ModelConfig(), gpus=[0], load3DM=True):
+    def __init__(self, model_cfg: ModelConfig(), gpus=[0], load3DM=True, device='gpu'):
 
         # Parameters
         self.model_cfg = model_cfg
         self.gpus = gpus
+
+        self.device = torch.device('cpu')
+        
+        if device=='gpu':
+            if torch.cuda.is_available():
+                self.device = torch.device('cuda:{}'.format(gpus[0]))
+                print('Using CUDA')
+            else:
+                print('CUDA is not available, will use CPU')
+        elif device=='mps':
+            if torch.mps.is_available():
+                self.device = torch.device('mps')
+                print('Using MPS')
+            else:
+                print('MPS is not available, will use CPU')
+        else:
+            print('Using CPU')
 
         # Pretreatment initialization
         self.transforms = pretreat.get_transformers(self.model_cfg)
@@ -42,7 +59,12 @@ class SPIGAFramework:
             model_state_dict = torch.load(weights_file)
 
         self.model.load_state_dict(model_state_dict)
-        self.model = self.model.cuda(gpus[0])
+
+        # self.model = self.model.cuda(gpus[0])
+
+        if self.device != torch.device('cpu'):
+            self.model = self.model.to(self.device)
+
         self.model.eval()
         print('SPIGA model loaded!')
 
@@ -133,5 +155,7 @@ class SPIGAFramework:
                 data[k] = self._data2device(v)
         else:
             with torch.no_grad():
-                data_var = data.cuda(device=self.gpus[0], non_blocking=True)
+                # data_var = data.cuda(device=self.gpus[0], non_blocking=True)
+                data_var = data.to(self.device, non_blocking=True)
+
         return data_var
