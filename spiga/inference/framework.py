@@ -14,7 +14,7 @@ from spiga.inference.config import ModelConfig
 
 class SPIGAFramework:
 
-    def __init__(self, model_cfg: ModelConfig(), gpus=[0], load3DM=True, device='gpu'):
+    def __init__(self, model_cfg: ModelConfig(), gpus=[0], load3DM=True, device='cuda'):
 
         # Parameters
         self.model_cfg = model_cfg
@@ -22,7 +22,7 @@ class SPIGAFramework:
 
         self.device = torch.device('cpu')
         
-        if device=='gpu':
+        if 'cuda' in device or device=='gpu':
             if torch.cuda.is_available():
                 self.device = torch.device('cuda:{}'.format(gpus[0]))
                 print('Using CUDA')
